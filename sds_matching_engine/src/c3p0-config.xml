@@ -1,0 +1,16 @@
+<c3p0-config>
+    <default-config>
+        <property name="automaticTestTable">tbl_con_test</property>
+        <property name="checkoutTimeout">30000</property>
+        <property name="idleConnectionTestPeriod">30</property>
+        <property name="initialPoolSize">30</property>
+        <property name="maxIdleTime">10</property>
+        <property name="maxPoolSize">10</property>
+        <property name="minPoolSize">5</property>
+        <property name="maxStatements">100</property>
+        <property name="jdbcUrl">jdbc:mysql://localhost:3306/sds</property>
+        <property name="driverClass">com.mysql.jdbc.Driver</property>
+        <property name="user">app</property>
+        <property name="password">!QAZ2wsx</property>
+    </default-config>
+</c3p0-config>
