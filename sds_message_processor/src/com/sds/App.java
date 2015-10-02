@@ -6,11 +6,17 @@ import com.sds.core.DeliveryProducer;
 import com.sds.core.InboxConsumer;
 import com.sds.core.InboxMessage;
 import com.sds.core.InboxProducer;
+import com.sds.core.Node;
 import com.sds.core.SubscriptionMessage;
 import com.sds.core.SubscriptionsConsumer;
 import com.sds.core.SubscriptionsProducer;
-import java.text.SimpleDateFormat;
+import com.sds.dao.DBConnectionPool;
+import com.sds.dao.DataManager;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -20,9 +26,40 @@ import org.apache.log4j.Logger;
 public class App {
 
     private final static Logger log = Logger.getLogger(App.class.getName());
+    private static Map<Integer, Node> nodesMap = null;
+
+    /**
+     * initialize the application nodes map to be used in other classes. the
+     * service exits if nodes map loading failure occurs
+     *
+     * @throws SQLException
+     */
+    private static void initNodesMap() throws SQLException {
+        Connection con = DBConnectionPool.getInstance().getConnection();
+        nodesMap = DataManager.getNodes(con);
+    }
+
+    /**
+     * gets the nodes map used at the of initialization
+     *
+     * @return nodes map
+     */
+    public static Map<Integer, Node> getNodesMap() {
+        return nodesMap;
+    }
 
     public static void main(String args[]) {
         log.info("Service is starting...");
+        try {
+            //initialize the node map
+            initNodesMap();
+        } catch (SQLException ex) {
+            System.out.println("Error laoding node map: " + ex);
+            log.error("error loading nodes maps", ex);
+            log.info("service exiting....");
+            System.exit(-1); //errroneous exit
+        }
+
         //shared lists
         LinkedList<InboxMessage> inboxSharedQueue = new LinkedList<InboxMessage>();
         LinkedList<SubscriptionMessage> subscriptionsSharedQueue = new LinkedList<SubscriptionMessage>();

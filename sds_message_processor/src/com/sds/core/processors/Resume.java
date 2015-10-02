@@ -46,7 +46,7 @@ public class Resume implements Processor {
 
                 log.error("subscriber loaded: " + subscriber);
                 if (subscriber.isLoaded()) {
-                    if (subscriber.getRegStatus() == RegistrationStatus.REG_CONFIRMED) {
+                    if (subscriber.getRegStatus() == RegistrationStatus.BASIC) {
                         if (subscriber.getStatus() == Subscriber.ACTIVE) {
                             responseText = TextConfigs.RESUME_ALREADY_RESUMED;
                         } else {

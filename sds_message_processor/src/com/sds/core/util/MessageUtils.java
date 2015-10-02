@@ -1,12 +1,15 @@
 package com.sds.core.util;
 
 import com.google.common.base.Splitter;
+import com.sds.App;
 import com.sds.core.ActivityLog;
 import com.sds.core.InboxMessage;
 import com.sds.core.Message;
+import com.sds.core.Node;
 import com.sds.core.ScheduledMessage;
 import com.sds.core.SendMessage;
 import com.sds.core.Subscriber;
+import com.sds.core.exceptions.InvalidNodeException;
 import com.sds.dao.DataManager;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -282,4 +285,14 @@ public class MessageUtils {
             log.error("unable to update the scheduled message " + activityLog, ex);
         }
     }
+
+    public static String getMessage(int nodeId) throws InvalidNodeException {
+        //assumption is that nodesmap cannot be empty
+        Node node = App.getNodesMap().get(nodeId);
+        if (node == null) {
+            throw new InvalidNodeException("Node id " + nodeId + " does not exist in the configurations loaded. check configurations.");
+        }
+        return node.getMessage();
+    }
+
 }

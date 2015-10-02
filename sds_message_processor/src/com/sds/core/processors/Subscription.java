@@ -1,16 +1,19 @@
 package com.sds.core.processors;
 
+import com.sds.App;
 import com.sds.core.OperationTypes;
 import com.sds.core.SubcriptionUpdateTypes;
 import com.sds.core.Subscriber;
 import com.sds.core.SubscriptionMessage;
 import com.sds.core.conf.TextConfigs;
+import com.sds.core.exceptions.InvalidNodeException;
 import com.sds.core.util.MessageUtils;
 import com.sds.core.util.Response;
 import com.sds.dao.DBConnectionPool;
 import com.sds.dao.DataManager;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -76,14 +79,22 @@ public class Subscription {
                             responseText = TextConfigs.SUBSCRIPTION_UPDATE_TECHNICAL_ERROR;
                         }
                     } else {
+                        subscriber.setLastNode(1); // initail the last node
+                        try {
+                            responseText = MessageUtils.getMessage(subscriber.getLastNode()); // get message for last node
+                        } catch (InvalidNodeException ex) {
+                            responseText = TextConfigs.SUBSCRIPTION_ADD_TECHNICAL_ERROR;
+                            log.error("unable to resolve the response text ", ex);
+                        }
                         if (DataManager.addSubscriber(connection, subscriber, message) == DataManager.EXECUTE_SUCCESS) {
-                            responseText = TextConfigs.SUBSCRIPTION_ADD_SUCCESS_PART1 + name + TextConfigs.SUBSCRIPTION_ADD_SUCCESS_PART2;
+                            //responseText = TextConfigs.SUBSCRIPTION_ADD_SUCCESS_PART1 + name + TextConfigs.SUBSCRIPTION_ADD_SUCCESS_PART2;
                         } else {
                             responseText = TextConfigs.SUBSCRIPTION_ADD_TECHNICAL_ERROR;
                         }
                     }
                 } else {
-                    //error - unsupportd update type
+                    log.error("subscription request type not supported: " + message.toString() + ", subscriber: " + subscriber);
+                    //error - unsupportd update type 
                     responseText = TextConfigs.SUBSCRIPTION_UNSUPPORTED_REQUEST;
                 }
 

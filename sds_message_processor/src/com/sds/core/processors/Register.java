@@ -59,7 +59,7 @@ public class Register implements Processor {
 
                 //subscriber is loaded
                 if (subscriber.isLoaded() && subscriber.getAge() != 0 && subscriber.getName() != null) {
-                    if (subscriber.getRegStatus() == RegistrationStatus.REG_INITIAL) {
+                    if (subscriber.getRegStatus() == RegistrationStatus.INITIAL) {
                         log.error("current registration status is initial");
                         //waiting for second registration
                         responseText = update(connection, subscriber, message);
@@ -164,7 +164,7 @@ public class Register implements Processor {
                     
                     if (subscriber.getSdpStatus() == SDPStatus.CONFIRMED) {
                         //update database record, with current
-                        if (DataManager.updateSubscriberPreference(connection, RegistrationStatus.REG_CONFIRMED, option, subscriber) != DataManager.EXECUTE_SUCCESS) {
+                        if (DataManager.updateSubscriberPreference(connection, RegistrationStatus.BASIC, option, subscriber) != DataManager.EXECUTE_SUCCESS) {
                             //inform customer to retry again, record could not be updated
                             return TextConfigs.REG_UPDATE_TECHNICAL_ERROR_TEXT;
                         } else {
@@ -173,7 +173,7 @@ public class Register implements Processor {
                         }
                     } else {
                         //update database record, with current
-                        if (DataManager.updateSubscriberPreference(connection, RegistrationStatus.REG_CONFIRMED, option, subscriber) != DataManager.EXECUTE_SUCCESS) {
+                        if (DataManager.updateSubscriberPreference(connection, RegistrationStatus.BASIC, option, subscriber) != DataManager.EXECUTE_SUCCESS) {
                             //inform customer to retry again, record could not be updated
                             return TextConfigs.REG_UPDATE_TECHNICAL_ERROR_TEXT;
                         } else {

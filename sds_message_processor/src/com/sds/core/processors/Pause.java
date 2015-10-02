@@ -46,7 +46,7 @@ public class Pause implements Processor {
 
                 log.error("subscriber loaded: " + subscriber);
                 if (subscriber.isLoaded()) {
-                    if (subscriber.getRegStatus() == RegistrationStatus.REG_CONFIRMED) {
+                    if (subscriber.getRegStatus() == RegistrationStatus.BASIC) {
                         if (subscriber.getStatus() == Subscriber.INACTIVE) {
                             responseText = TextConfigs.PAUSE_ALREADY_PAUSED;
                         } else {

@@ -5,6 +5,7 @@ import com.sds.core.DatingTip;
 import com.sds.core.DeliveryMessage;
 import com.sds.core.InboxMessage;
 import com.sds.core.Job;
+import com.sds.core.Node;
 import com.sds.core.RegistrationStatus;
 import com.sds.core.ScheduledMessage;
 import com.sds.core.Subscriber;
@@ -16,6 +17,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.log4j.Logger;
 
 /**
@@ -34,7 +37,7 @@ public class DataManager {
      * @param conn connection instance (ensure the connection is checked)
      * @param limit number of records to query
      * @param lastMessageId last message queried last
-     * @return list of messages retrieved from the database
+     * @return map of messages retrieved from the database
      */
     public static ArrayList<InboxMessage> pollMessages(Connection conn, int limit, long lastMessageId) {
 
@@ -120,7 +123,6 @@ public class DataManager {
                         rs.getString("effective_time"),
                         rs.getString("expiry_time"))
                 );
-
             }
             //close connection 
             try {
@@ -215,7 +217,7 @@ public class DataManager {
      * @param conn connection instance (ensure the connection is checked)
      * @param limit number of records to query
      * @param lastRecordId last message queried last
-     * @return list of messages retrieved from the database
+     * @return map of messages retrieved from the database
      */
     public static ArrayList<Subscriber> pollActiveSubscribers(Connection conn, int limit, long lastRecordId) {
 
@@ -232,7 +234,7 @@ public class DataManager {
             stmt.setLong(1, lastRecordId);
             rs = stmt.executeQuery();
             while (rs.next()) {
-                list.add(new Subscriber(
+                Subscriber sub = new Subscriber(
                         rs.getLong("id"),
                         rs.getString("msisdn"),
                         rs.getString("name"),
@@ -244,8 +246,32 @@ public class DataManager {
                         rs.getString("status_reason"),
                         rs.getInt("preference"),
                         rs.getInt("sdp_status"),
-                        true)
-                );
+                        true);
+
+                //get data for last node and other generic data parameters
+                sub.setLastNode(rs.getInt(rs.getInt("last_node")));
+                sub.setData0(rs.getString("data0"));
+                sub.setData1(rs.getString("data1"));
+                sub.setData2(rs.getString("data2"));
+                sub.setData3(rs.getString("data3"));
+                sub.setData4(rs.getString("data4"));
+                sub.setData5(rs.getString("data5"));
+                sub.setData6(rs.getString("data6"));
+                sub.setData7(rs.getString("data7"));
+                sub.setData8(rs.getString("data8"));
+                sub.setData9(rs.getString("data9"));
+                sub.setPref0(rs.getString("pref0"));
+                sub.setPref1(rs.getString("pref1"));
+                sub.setPref2(rs.getString("pref2"));
+                sub.setPref3(rs.getString("pref3"));
+                sub.setPref4(rs.getString("pref4"));
+                sub.setPref5(rs.getString("pref5"));
+                sub.setPref6(rs.getString("pref6"));
+                sub.setPref7(rs.getString("pref7"));
+                sub.setPref8(rs.getString("pref8"));
+                sub.setPref9(rs.getString("pref9"));
+
+                list.add(sub);
             }
             //close connection 
             try {
@@ -383,6 +409,27 @@ public class DataManager {
                 sub.setPreference(rs.getInt("preference"));
                 sub.setSdpStatus(rs.getInt("sdp_status"));
                 sub.setLoaded(true);
+                sub.setLastNode(rs.getInt(rs.getInt("last_node")));
+                sub.setData0(rs.getString("data0"));
+                sub.setData1(rs.getString("data1"));
+                sub.setData2(rs.getString("data2"));
+                sub.setData3(rs.getString("data3"));
+                sub.setData4(rs.getString("data4"));
+                sub.setData5(rs.getString("data5"));
+                sub.setData6(rs.getString("data6"));
+                sub.setData7(rs.getString("data7"));
+                sub.setData8(rs.getString("data8"));
+                sub.setData9(rs.getString("data9"));
+                sub.setPref0(rs.getString("pref0"));
+                sub.setPref1(rs.getString("pref1"));
+                sub.setPref2(rs.getString("pref2"));
+                sub.setPref3(rs.getString("pref3"));
+                sub.setPref4(rs.getString("pref4"));
+                sub.setPref5(rs.getString("pref5"));
+                sub.setPref6(rs.getString("pref6"));
+                sub.setPref7(rs.getString("pref7"));
+                sub.setPref8(rs.getString("pref8"));
+                sub.setPref9(rs.getString("pref9"));
             }
             //close connection 
             try {
@@ -475,7 +522,7 @@ public class DataManager {
         try {
             query = "INSERT INTO tbl_subscribers(msisdn,name,age,sex,location,reg_status,status,"
                     + "status_reason,sdp_status,service_id,product_id,effective_time,expiry_time,created_on,last_updated_on,last_updated_by) "
-                    + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),0)";
+                    + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),0,last_node)";
 
             stmt = conn.prepareStatement(query);
             stmt.setString(1, message.getMsisdn());
@@ -491,6 +538,7 @@ public class DataManager {
             stmt.setString(11, message.getProductId());
             stmt.setString(12, message.getEffectiveTime());
             stmt.setString(13, message.getExpiryTime());
+            stmt.setInt(14, sub.getLastNode());
 
             //execute the query
             stmt.execute();
@@ -520,6 +568,88 @@ public class DataManager {
         return executionStatus;
     }
 
+    public static int updateSubscriberParamater(Connection conn, String paramName, String paramValue, int newLastNode, int newRegStatus, Subscriber subscriber) {
+        PreparedStatement stmt = null;
+        String query = null;
+        int executionStatus = EXECUTE_FAIL;// defaulf status is failed
+
+        try {
+            query = "UPDATE tbl_subscribers SET " + paramName + "=? last_updated_on = NOW(), last_node=?, reg_status=?, last_updated_by=0  WHERE id=?";
+
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, paramValue);
+            stmt.setInt(2, newLastNode);
+            stmt.setInt(3, newRegStatus);
+            stmt.setLong(4, subscriber.getId());
+            log.debug("query: " + query + " parameters (" + paramName + ", " + paramValue + ", " + ", last node: " + newLastNode + ", reg_status:" + newRegStatus + ", " + subscriber + ")");
+            //execute the query
+            stmt.execute();
+
+            //close the statement
+            try {
+                stmt.close();
+            } catch (SQLException ex) {
+                log.warn("error closing statement", ex);
+            }
+
+            executionStatus = EXECUTE_SUCCESS;
+
+        } catch (SQLException ex) {
+            log.error("Error executing the query for subscriber " + subscriber + " & param value = " + paramValue + "(" + query + ")", ex);
+        } finally {
+            //close the resourrces opened
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException ex) {
+                log.warn("An error closing a rs and stmt", ex);
+            }
+        }
+        return executionStatus;
+    }
+
+    public static int updateSubscriberParamater(Connection conn, String paramName, int paramValue, int newLastNode, int newRegStatus, Subscriber subscriber) {
+        PreparedStatement stmt = null;
+        String query = null;
+        int executionStatus = EXECUTE_FAIL;// defaulf status is failed
+
+        try {
+            query = "UPDATE tbl_subscribers SET " + paramName + "=? last_updated_on = NOW(), last_node=?, reg_status=?, last_updated_by=0  WHERE id=?";
+
+            stmt = conn.prepareStatement(query);
+            stmt.setInt(1, paramValue);
+            stmt.setInt(2, newLastNode);
+            stmt.setInt(3, newRegStatus);
+            stmt.setLong(4, subscriber.getId());
+            log.debug("query: " + query + " parameters (" + paramName + ", " + paramValue + ", " + ", last node: " + newLastNode + ", reg_status:" + newRegStatus + ", " + subscriber + ")");
+            //execute the query
+            stmt.execute();
+
+            //close the statement
+            try {
+                stmt.close();
+            } catch (SQLException ex) {
+                log.warn("error closing statement", ex);
+            }
+
+            executionStatus = EXECUTE_SUCCESS;
+
+        } catch (SQLException ex) {
+            log.error("Error executing the query for subscriber " + subscriber + " & param value = " + paramValue + "(" + query + ")", ex);
+        } finally {
+            //close the resourrces opened
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException ex) {
+                log.warn("An error closing a rs and stmt", ex);
+            }
+        }
+        return executionStatus;
+    }
+
     public static int updateSubscriberPreference(Connection conn, int regStatus, int preference, Subscriber subscriber) {
 
         PreparedStatement stmt = null;
@@ -534,7 +664,7 @@ public class DataManager {
             stmt.setInt(2, preference);
             stmt.setLong(3, subscriber.getId());
 
-            log.info("query: " + query + " parameters (" + RegistrationStatus.REG_PENDING + ", " + preference + ", " + subscriber + ")");
+            log.info("query: " + query + " parameters (" + RegistrationStatus.PENDING + ", " + preference + ", " + subscriber + ")");
 
             //execute the query
             stmt.execute();
@@ -1593,6 +1723,64 @@ public class DataManager {
             }
         }
         return executionStatus;
+    }
+
+    public static Map<Integer, Node> getNodes(Connection conn) {
+        HashMap<Integer, Node> map = new HashMap<>();
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        String query = null;
+        try {
+            query = "SELECT * FROM tbl_nodes ORDER BY id ASC";
+
+            stmt = conn.prepareStatement(query);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                map.put(rs.getInt("id"), new Node(
+                        rs.getInt("id"),
+                        rs.getString("message"),
+                        rs.getString("validation_rule"),
+                        rs.getString("validation_failure_message"),
+                        rs.getString("field_name"),
+                        rs.getInt("new_reg_status"),
+                        rs.getInt("pause"),
+                        rs.getInt("final"),
+                        rs.getString("pause_message"),
+                        rs.getString("final_message"),
+                        rs.getInt("next_node"),
+                        rs.getString("matching_query"))
+                );
+
+            }
+            //close connection 
+            try {
+                rs.close();
+            } catch (SQLException ex) {
+                log.warn("error closing result set", ex);
+            }
+            //close the statement
+            try {
+                stmt.close();
+            } catch (SQLException ex) {
+                log.warn("error closing statement", ex);
+            }
+
+        } catch (SQLException ex) {
+            log.error("Error executing the query (" + query + ")", ex);
+        } finally {
+            //close the resourrces opened
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException ex) {
+                log.warn("An error closing a rs and stmt", ex);
+            }
+        }
+        return map;
     }
 
 }

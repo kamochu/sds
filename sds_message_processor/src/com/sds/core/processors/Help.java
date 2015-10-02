@@ -48,7 +48,7 @@ public class Help implements Processor {
 
                 log.error("subscriber loaded: " + subscriber);
                 if (subscriber.isLoaded()) {
-                    if (subscriber.getRegStatus() == RegistrationStatus.REG_CONFIRMED) {
+                    if (subscriber.getRegStatus() == RegistrationStatus.BASIC) {
                         responseText = TextConfigs.HELP_REGISTERED_PART1 + subscriber.getName() + TextConfigs.HELP_REGISTERED_PART2;
                     } else {
                         DBConnectionPool.closeConnection(connection); // not needed anymore
