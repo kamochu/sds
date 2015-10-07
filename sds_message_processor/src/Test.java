@@ -3,6 +3,7 @@ import com.sds.dao.DBConnectionPool;
 import com.sds.dao.DataManager;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -12,24 +13,14 @@ public class Test {
 
     public static void main(String[] args) {
 
-        DBConnectionPool pool = DBConnectionPool.getInstance();
+        String pattern = "[mMfF]";
+         System.out.println("Matching " + Pattern.compile(pattern).matcher("g").matches());
 
-        Connection con = null;
-        try {
-            con = pool.getConnection();
-            System.out.println(DataManager.getNodes(con).toString());
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        DBConnectionPool.closeConnection(con);
+//        for (int i = 0; i < 10; i++) {
+//
+//            System.out.println("Matching " + i + " = " + Pattern.compile(pattern).matcher("" + i).matches());
+//        }
 
-        String str = "SUB1213";
-        System.out.println(str.subSequence(0, 3));
-
-    }
-
-    public static void passByReference(String str) {
-        str = "new value";
     }
 
 }

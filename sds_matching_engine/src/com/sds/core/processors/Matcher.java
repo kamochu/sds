@@ -6,10 +6,13 @@ import com.sds.App;
 import com.sds.core.DatingTip;
 import com.sds.core.MessageTypes;
 import com.sds.core.ScheduledMessage;
+import com.sds.core.conf.Notifications;
 import com.sds.core.conf.RegistrationStatus;
 import com.sds.core.conf.SDPStatus;
 import com.sds.core.conf.Sex;
 import com.sds.core.conf.TextConfigs;
+import com.sds.core.exceptions.InvalidNodeException;
+import com.sds.core.util.MessageUtils;
 import com.sds.dao.DBConnectionPool;
 import com.sds.dao.DataManager;
 import java.sql.Connection;
@@ -60,7 +63,13 @@ public class Matcher {
             found = true;
         } else {
             if (subscriber.getRegStatus() < RegistrationStatus.BASIC) {
-                message.setMessage(TextConfigs.MATCHER_REGISTRATION_PENDING_TEXT);
+                //message.setMessage(TextConfigs.MATCHER_REGISTRATION_PENDING_TEXT);
+                try {
+                    message.setMessage(MessageUtils.resolveMessage(subscriber.getLastNode(), subscriber));
+                } catch (InvalidNodeException ex) {
+                    message.setMessage(MessageUtils.resolveMessage(TextConfigs.GEN_TECHNICAL_FAILURE_TEXT, subscriber));
+                    log.error("error resolving message", ex);
+                }
                 message.setMessageType(MessageTypes.INFO_SMS);
                 App.incrementInfoSMS();
                 found = true;
@@ -79,7 +88,6 @@ public class Matcher {
                                 subscriber.getLocation(),
                                 subscriber.getPreference()
                         );
-
                     } catch (SQLException ex) {
                         log.warn("error getting date match for " + subscriber.toString(), ex);
                     }
@@ -95,12 +103,25 @@ public class Matcher {
                         App.incrementDateMatches();
                         found = true;
                     } else {
-                        try {
+                        if (subscriber.getRegStatus() < RegistrationStatus.COMPLETE) {
+                            //get the last node message id to remind customer to update profile
+                            try {
+                                message.setMessage(MessageUtils.resolveMessage(subscriber.getLastNode(), subscriber));
+                            } catch (InvalidNodeException ex) {
+                                message.setMessage(MessageUtils.resolveMessage(TextConfigs.GEN_TECHNICAL_FAILURE_TEXT, subscriber));
+                                log.error("error resolving message", ex);
+                            }
+                            message.setMessageType(MessageTypes.INFO_SMS);
+                            App.incrementInfoSMS();
+                            found = true;
+                        } else {
                             //get the date tip
-                            tip = DataManager.getDatingTip(connection, subscriber.getId());
-                        } catch (SQLException ex) {
-                            log.warn("eror loading dating tip for " + subscriber.toString(), ex);
-                            App.incrementNoFailed();
+                            try {
+                                tip = DataManager.getDatingTip(connection, subscriber.getId());
+                            } catch (SQLException ex) {
+                                log.warn("eror loading dating tip for " + subscriber.toString(), ex);
+                                App.incrementNoFailed();
+                            }
                         }
                     }
 
