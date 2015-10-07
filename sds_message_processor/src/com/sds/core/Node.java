@@ -9,30 +9,28 @@ public class Node {
     int id;
     private String message;
     private String validationRule;
-    private String validationFailureCourse;
+    private String validationFailureMessage;
     private String dbFiledName;
+    private int integerValue;
     private int newRegStatus;
     private int pauseNode;
     private int finalNode;
-    private String pauseMessage;
-    private String finalMessage;
     private int nextNode;
     private String matchingQuery;
 
     public Node() {
     }
 
-    public Node(int id, String message, String validationRule, String validationFailureCourse, String dbFiledName, int newRegStatus, int pauseNode, int finalNode, String pauseMessage, String finalMessage, int nextNode, String matchingQuery) {
+    public Node(int id, String message, String validationRule, String validationFailureMessage, String dbFiledName, int integerValue, int newRegStatus, int pauseNode, int finalNode, int nextNode, String matchingQuery) {
         this.id = id;
         this.message = message;
         this.validationRule = validationRule;
-        this.validationFailureCourse = validationFailureCourse;
+        this.validationFailureMessage = validationFailureMessage;
         this.dbFiledName = dbFiledName;
+        this.integerValue = integerValue;
         this.newRegStatus = newRegStatus;
         this.pauseNode = pauseNode;
         this.finalNode = finalNode;
-        this.pauseMessage = pauseMessage;
-        this.finalMessage = finalMessage;
         this.nextNode = nextNode;
         this.matchingQuery = matchingQuery;
     }
@@ -61,12 +59,12 @@ public class Node {
         this.validationRule = validationRule;
     }
 
-    public String getValidationFailureCourse() {
-        return validationFailureCourse;
+    public String getValidationFailureMessage() {
+        return validationFailureMessage;
     }
 
-    public void setValidationFailureCourse(String validationFailureCourse) {
-        this.validationFailureCourse = validationFailureCourse;
+    public void setValidationFailureMessage(String validationFailureMessage) {
+        this.validationFailureMessage = validationFailureMessage;
     }
 
     public String getDbFiledName() {
@@ -85,36 +83,20 @@ public class Node {
         this.newRegStatus = newRegStatus;
     }
 
-    public int getPauseNode() {
-        return pauseNode;
+    public boolean isPauseNode() {
+        return (pauseNode == 1);
     }
 
     public void setPauseNode(int pauseNode) {
         this.pauseNode = pauseNode;
     }
 
-    public int getFinalNode() {
-        return finalNode;
+    public boolean isFinalNode() {
+        return (finalNode == 1);
     }
 
     public void setFinalNode(int finalNode) {
         this.finalNode = finalNode;
-    }
-
-    public String getPauseMessage() {
-        return pauseMessage;
-    }
-
-    public void setPauseMessage(String pauseMessage) {
-        this.pauseMessage = pauseMessage;
-    }
-
-    public String getFinalMessage() {
-        return finalMessage;
-    }
-
-    public void setFinalMessage(String finalMessage) {
-        this.finalMessage = finalMessage;
     }
 
     public int getNextNode() {
@@ -133,9 +115,21 @@ public class Node {
         this.matchingQuery = matchingQuery;
     }
 
+    public int getIntegerValue() {
+        return integerValue;
+    }
+
+    public void setIntegerValue(int integerValue) {
+        this.integerValue = integerValue;
+    }
+
+    public boolean isFieldIntegerValue() {
+        return (this.integerValue == 1);
+    }
+
     @Override
     public String toString() {
-        return "Node{" + "id=" + id + ", message=" + message + ", validationRule=" + validationRule + ", validationFailureCourse=" + validationFailureCourse + ", dbFiledName=" + dbFiledName + ", newRegStatus=" + newRegStatus + ", pauseNode=" + pauseNode + ", finalNode=" + finalNode + ", pauseMessage=" + pauseMessage + ", finalMessage=" + finalMessage + ", nextNode=" + nextNode + ", matchingQuery=" + matchingQuery + '}';
+        return "Node{" + "id=" + id + ", message=" + message + ", validationRule=" + validationRule + ", validationFailureMessage=" + validationFailureMessage + ", dbFiledName=" + dbFiledName + ", integerValue=" + integerValue + ", newRegStatus=" + newRegStatus + ", pauseNode=" + pauseNode + ", finalNode=" + finalNode + ", nextNode=" + nextNode + ", matchingQuery=" + matchingQuery + '}';
     }
 
 }

@@ -3,8 +3,6 @@ import com.sds.dao.DBConnectionPool;
 import com.sds.dao.DataManager;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *

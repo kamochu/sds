@@ -16,7 +16,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 /**
@@ -24,7 +23,7 @@ import org.apache.log4j.Logger;
  * @author Samuel Kamochu
  */
 public class App {
-
+    
     private final static Logger log = Logger.getLogger(App.class.getName());
     private static Map<Integer, Node> nodesMap = null;
 
@@ -37,6 +36,7 @@ public class App {
     private static void initNodesMap() throws SQLException {
         Connection con = DBConnectionPool.getInstance().getConnection();
         nodesMap = DataManager.getNodes(con);
+        log.info("nodes loaded: " + nodesMap);
     }
 
     /**
@@ -47,7 +47,7 @@ public class App {
     public static Map<Integer, Node> getNodesMap() {
         return nodesMap;
     }
-
+    
     public static void main(String args[]) {
         log.info("Service is starting...");
         try {
@@ -71,7 +71,7 @@ public class App {
         Thread inboxConsumerThread2 = new Thread(new InboxConsumer(inboxSharedQueue), "InboxConsumer 2");
         Thread inboxConsumerThread3 = new Thread(new InboxConsumer(inboxSharedQueue), "InboxConsumer 3");
         Thread inboxConsumerThread4 = new Thread(new InboxConsumer(inboxSharedQueue), "InboxConsumer 4");
-
+        
         inboxProducerThread.start();
         inboxConsumerThread1.start();
         inboxConsumerThread2.start();
@@ -84,7 +84,7 @@ public class App {
         Thread subscriptionsConsumerThread2 = new Thread(new SubscriptionsConsumer(subscriptionsSharedQueue), "SubscriptionsConsumer 2");
         Thread subscriptionsConsumerThread3 = new Thread(new SubscriptionsConsumer(subscriptionsSharedQueue), "SubscriptionsConsumer 3");
         Thread subscriptionsConsumerThread4 = new Thread(new SubscriptionsConsumer(subscriptionsSharedQueue), "SubscriptionsConsumer 4");
-
+        
         subscriptionsProducerThread.start();
         subscriptionsConsumerThread1.start();
         subscriptionsConsumerThread2.start();
@@ -97,12 +97,12 @@ public class App {
         Thread deliveryConsumerThread2 = new Thread(new DeliveryConsumer(deliverySharedQueue), "DeliveryConsumer 2");
         Thread deliveryConsumerThread3 = new Thread(new DeliveryConsumer(deliverySharedQueue), "DeliveryConsumer 3");
         Thread deliveryConsumerThread4 = new Thread(new DeliveryConsumer(deliverySharedQueue), "DeliveryConsumer 4");
-
+        
         deliveryProducerThread.start();
         deliveryConsumerThread1.start();
         deliveryConsumerThread2.start();
         deliveryConsumerThread3.start();
         deliveryConsumerThread4.start();
     }
-
+    
 }

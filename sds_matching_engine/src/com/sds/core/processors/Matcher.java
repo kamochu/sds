@@ -5,10 +5,10 @@ import org.apache.log4j.Logger;
 import com.sds.App;
 import com.sds.core.DatingTip;
 import com.sds.core.MessageTypes;
-import com.sds.core.RegistrationStatus;
-import com.sds.core.SDPStatus;
 import com.sds.core.ScheduledMessage;
-import com.sds.core.Sex;
+import com.sds.core.conf.RegistrationStatus;
+import com.sds.core.conf.SDPStatus;
+import com.sds.core.conf.Sex;
 import com.sds.core.conf.TextConfigs;
 import com.sds.dao.DBConnectionPool;
 import com.sds.dao.DataManager;
@@ -21,17 +21,17 @@ import java.util.Date;
  * @author Samuel Kamochu
  */
 public class Matcher {
-    
+
     private final static Logger log = Logger.getLogger(Matcher.class.getName());
     private final static String smsSendStartTime = "0800";
     private final static String smsSendEndTime = "1800";
     private final static int MALE_AGE_DIFF = -5;
     private final static int FEMALE_AGE_DIFF = 5;
-    
+
     public final static DBConnectionPool pool = DBConnectionPool.getInstance();
-    
+
     public void process(Subscriber subscriber) {
-        log.info("RUNNING matcher for: " + subscriber); 
+        log.info("RUNNING matcher for: " + subscriber);
 
         //init the send message and set default parameters
         ScheduledMessage message = new ScheduledMessage();
@@ -40,41 +40,37 @@ public class Matcher {
         message.setSendStartTime(smsSendStartTime);
         message.setSendEndTime(smsSendEndTime);
         message.setSubscriber(subscriber);
-        
+
         Connection connection = null;
         boolean found = false;
 
         //get connection 
         try {
             connection = pool.getConnection();
-            
+
         } catch (SQLException ex) {
             log.error("error getting connection from pool: " + ex);
             App.incrementNoFailed();
         }
-        
+
         if (subscriber.getSdpStatus() != SDPStatus.CONFIRMED) {
             message.setMessage(TextConfigs.MATCHER_SDP_STATUS_INACTIVE_TEXT);
             message.setMessageType(MessageTypes.INFO_SMS);
             App.incrementInfoSMS();
             found = true;
         } else {
-            if (subscriber.getRegStatus() != RegistrationStatus.REG_CONFIRMED) {
+            if (subscriber.getRegStatus() < RegistrationStatus.BASIC) {
                 message.setMessage(TextConfigs.MATCHER_REGISTRATION_PENDING_TEXT);
                 message.setMessageType(MessageTypes.INFO_SMS);
                 App.incrementInfoSMS();
                 found = true;
             } else {
                 //proceed to checking date match
-
                 if (connection != null) {
-                    
                     Subscriber match = null;
                     DatingTip tip = null;
-
                     //get date match
                     try {
-                        
                         match = DataManager.getDateMatch(connection,
                                 subscriber.getId(),
                                 compuetLowerAge(subscriber.getAge(), subscriber.getSex()),
@@ -83,11 +79,11 @@ public class Matcher {
                                 subscriber.getLocation(),
                                 subscriber.getPreference()
                         );
-                        
+
                     } catch (SQLException ex) {
                         log.warn("error getting date match for " + subscriber.toString(), ex);
                     }
-                    
+
                     if (match != null) {
                         message.setMessage("Dear " + subscriber.getName() + ". "
                                 + "We have a new date for you!"
@@ -107,7 +103,7 @@ public class Matcher {
                             App.incrementNoFailed();
                         }
                     }
-                    
+
                     if (tip != null) {
                         message.setMessage(tip.getTip());
                         message.setMessageType(MessageTypes.DATING_TIP);
@@ -119,7 +115,7 @@ public class Matcher {
                     }
                 }
             }
-            
+
         }
 
         //found tip or a date or info sms
@@ -144,7 +140,7 @@ public class Matcher {
             log.warn("error closing connection", ex);
         }
     }
-    
+
     public static int compuetLowerAge(int age, String sex) {
         int newAge;
         if (Sex.MALE.equalsIgnoreCase(sex)) {
@@ -154,7 +150,7 @@ public class Matcher {
         }
         return (newAge >= age) ? age : newAge;
     }
-    
+
     public static int compuetUpperAge(int age, String sex) {
         int newAge;
         if (Sex.MALE.equalsIgnoreCase(sex)) {
@@ -164,26 +160,26 @@ public class Matcher {
         }
         return (newAge >= age) ? newAge : age;
     }
-    
+
     public static String getPreferedSex(String sex) {
         if (Sex.MALE.equalsIgnoreCase(sex)) {
             return Sex.FEMALE;
         }
-        
+
         return Sex.MALE;
     }
-    
+
     public static String getPronoun(String sex) {
         if (Sex.MALE.equalsIgnoreCase(sex)) {
             return "He";
         }
         return "She";
     }
-    
+
     public static String getNormalizedMSISDN(String msisdn) {
-        
+
         return "0" + msisdn.substring(4);
-        
+
     }
-    
+
 }

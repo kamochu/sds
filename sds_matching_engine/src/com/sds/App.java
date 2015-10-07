@@ -1,9 +1,9 @@
 package com.sds;
 
-import com.sds.core.JobStatus;
 import com.sds.core.MatcherConsumer;
 import com.sds.core.MatcherProducer;
 import com.sds.core.Subscriber;
+import com.sds.core.conf.JobStatus;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;

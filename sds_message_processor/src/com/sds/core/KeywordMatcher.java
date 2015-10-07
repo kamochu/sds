@@ -1,5 +1,6 @@
 package com.sds.core;
 
+import com.sds.core.conf.Keywords;
 import com.sds.core.processors.Help;
 import com.sds.core.processors.Pause;
 import com.sds.core.processors.Register;

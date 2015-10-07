@@ -1,8 +1,8 @@
 package com.sds.core.processors;
 
 import com.sds.core.DeliveryMessage;
-import com.sds.core.DeliveryMessageTypes;
-import com.sds.core.RequestTypes;
+import com.sds.core.conf.DeliveryMessageTypes;
+import com.sds.core.conf.RequestTypes;
 import static com.sds.core.processors.Help.pool;
 import com.sds.dao.DBConnectionPool;
 import com.sds.dao.DataManager;

@@ -6,7 +6,7 @@ import com.sds.core.DeliveryMessage;
 import com.sds.core.InboxMessage;
 import com.sds.core.Job;
 import com.sds.core.Node;
-import com.sds.core.RegistrationStatus;
+import com.sds.core.conf.RegistrationStatus;
 import com.sds.core.ScheduledMessage;
 import com.sds.core.Subscriber;
 import com.sds.core.SubscriptionMessage;
@@ -249,7 +249,7 @@ public class DataManager {
                         true);
 
                 //get data for last node and other generic data parameters
-                sub.setLastNode(rs.getInt(rs.getInt("last_node")));
+                sub.setLastNode(rs.getInt("last_node"));
                 sub.setData0(rs.getString("data0"));
                 sub.setData1(rs.getString("data1"));
                 sub.setData2(rs.getString("data2"));
@@ -409,7 +409,7 @@ public class DataManager {
                 sub.setPreference(rs.getInt("preference"));
                 sub.setSdpStatus(rs.getInt("sdp_status"));
                 sub.setLoaded(true);
-                sub.setLastNode(rs.getInt(rs.getInt("last_node")));
+                sub.setLastNode(rs.getInt("last_node"));
                 sub.setData0(rs.getString("data0"));
                 sub.setData1(rs.getString("data1"));
                 sub.setData2(rs.getString("data2"));
@@ -520,9 +520,10 @@ public class DataManager {
         int executionStatus = EXECUTE_FAIL;// defaulf status is failed
 
         try {
-            query = "INSERT INTO tbl_subscribers(msisdn,name,age,sex,location,reg_status,status,"
-                    + "status_reason,sdp_status,service_id,product_id,effective_time,expiry_time,created_on,last_updated_on,last_updated_by) "
-                    + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),0,last_node)";
+            query = "INSERT INTO tbl_subscribers("
+                    + "msisdn,name,age,sex,location,reg_status,status,"
+                    + "status_reason,sdp_status,service_id,product_id,effective_time,expiry_time,created_on,last_updated_on,last_updated_by,last_node) "
+                    + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),0,?)";
 
             stmt = conn.prepareStatement(query);
             stmt.setString(1, message.getMsisdn());
@@ -574,15 +575,14 @@ public class DataManager {
         int executionStatus = EXECUTE_FAIL;// defaulf status is failed
 
         try {
-            query = "UPDATE tbl_subscribers SET " + paramName + "=? last_updated_on = NOW(), last_node=?, reg_status=?, last_updated_by=0  WHERE id=?";
+            query = "UPDATE tbl_subscribers SET " + paramName + "=?, last_updated_on = NOW(), last_node=?, reg_status=?, last_updated_by=0  WHERE id=?";
 
             stmt = conn.prepareStatement(query);
             stmt.setString(1, paramValue);
             stmt.setInt(2, newLastNode);
             stmt.setInt(3, newRegStatus);
             stmt.setLong(4, subscriber.getId());
-            log.debug("query: " + query + " parameters (" + paramName + ", " + paramValue + ", " + ", last node: " + newLastNode + ", reg_status:" + newRegStatus + ", " + subscriber + ")");
-            //execute the query
+            log.info("query: " + query + " parameters (" + paramName + ", " + paramValue + ", " + ", last node: " + newLastNode + ", reg_status:" + newRegStatus + ", " + subscriber + ")");
             stmt.execute();
 
             //close the statement
@@ -615,15 +615,13 @@ public class DataManager {
         int executionStatus = EXECUTE_FAIL;// defaulf status is failed
 
         try {
-            query = "UPDATE tbl_subscribers SET " + paramName + "=? last_updated_on = NOW(), last_node=?, reg_status=?, last_updated_by=0  WHERE id=?";
-
+            query = "UPDATE tbl_subscribers SET " + paramName + "=?, last_updated_on = NOW(), last_node=?, reg_status=?, last_updated_by=0  WHERE id=?";
             stmt = conn.prepareStatement(query);
             stmt.setInt(1, paramValue);
             stmt.setInt(2, newLastNode);
             stmt.setInt(3, newRegStatus);
             stmt.setLong(4, subscriber.getId());
             log.debug("query: " + query + " parameters (" + paramName + ", " + paramValue + ", " + ", last node: " + newLastNode + ", reg_status:" + newRegStatus + ", " + subscriber + ")");
-            //execute the query
             stmt.execute();
 
             //close the statement
@@ -637,6 +635,44 @@ public class DataManager {
 
         } catch (SQLException ex) {
             log.error("Error executing the query for subscriber " + subscriber + " & param value = " + paramValue + "(" + query + ")", ex);
+        } finally {
+            //close the resourrces opened
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException ex) {
+                log.warn("An error closing a rs and stmt", ex);
+            }
+        }
+        return executionStatus;
+    }
+
+    public static int updateSubscriberNullParamater(Connection conn, int newLastNode, int newRegStatus, Subscriber subscriber) {
+        PreparedStatement stmt = null;
+        String query = null;
+        int executionStatus = EXECUTE_FAIL;// defaulf status is failed
+
+        try {
+            query = "UPDATE tbl_subscribers SET last_updated_on = NOW(), last_node=?, reg_status=?, last_updated_by=0  WHERE id=?";
+            stmt = conn.prepareStatement(query);
+            stmt.setInt(1, newLastNode);
+            stmt.setInt(2, newRegStatus);
+            stmt.setLong(3, subscriber.getId());
+            log.debug("query: " + query + " parameters (last node: " + newLastNode + ", reg_status:" + newRegStatus + ", " + subscriber + ")");
+            stmt.execute();
+
+            //close the statement
+            try {
+                stmt.close();
+            } catch (SQLException ex) {
+                log.warn("error closing statement", ex);
+            }
+
+            executionStatus = EXECUTE_SUCCESS;
+
+        } catch (SQLException ex) {
+            log.error("Error executing the query for subscriber " + subscriber + "(" + query + ")", ex);
         } finally {
             //close the resourrces opened
             try {
@@ -1731,7 +1767,7 @@ public class DataManager {
         ResultSet rs = null;
         String query = null;
         try {
-            query = "SELECT * FROM tbl_nodes ORDER BY id ASC";
+            query = "SELECT * FROM tbl_notification_messages ORDER BY id ASC";
 
             stmt = conn.prepareStatement(query);
             rs = stmt.executeQuery();
@@ -1742,11 +1778,10 @@ public class DataManager {
                         rs.getString("validation_rule"),
                         rs.getString("validation_failure_message"),
                         rs.getString("field_name"),
+                        rs.getInt("integer_value"),
                         rs.getInt("new_reg_status"),
                         rs.getInt("pause"),
                         rs.getInt("final"),
-                        rs.getString("pause_message"),
-                        rs.getString("final_message"),
                         rs.getInt("next_node"),
                         rs.getString("matching_query"))
                 );

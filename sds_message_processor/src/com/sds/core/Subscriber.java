@@ -1,5 +1,7 @@
 package com.sds.core;
 
+import com.sds.core.conf.RegistrationStatus;
+
 /**
  *
  * @author Samuel Kamochu
@@ -345,7 +347,8 @@ public class Subscriber {
 
     @Override
     public String toString() {
-        return "Subscriber{" + "id=" + id + ", msisdn=" + msisdn + ", name=" + name + ", age=" + age + ", sex=" + sex + ", location=" + location + ", regStatus=" + regStatus + ", status=" + status + ", sdpStatus=" + sdpStatus + ", reason=" + reason + ", nextNode=" + lastNode + ", data0=" + data0 + ", data1=" + data1 + ", data2=" + data2 + ", data3=" + data3 + ", data4=" + data4 + ", data5=" + data5 + ", data6=" + data6 + ", data7=" + data7 + ", data8=" + data8 + ", data9=" + data9 + ", pref0=" + pref0 + ", pref1=" + pref1 + ", pref2=" + pref2 + ", pref3=" + pref3 + ", pref4=" + pref4 + ", pref5=" + pref5 + ", pref6=" + pref6 + ", pref7=" + pref7 + ", pref8=" + pref8 + ", pref9=" + pref9 + ", preference=" + preference + ", loaded=" + loaded + '}';
+        return "Subscriber{" + "id=" + id + ", msisdn=" + msisdn + ", name=" + name + ", age=" + age + ", sex=" + sex + ", location=" + location + ", regStatus=" + regStatus + ", status=" + status + ", sdpStatus=" + sdpStatus + ", reason=" + reason + ", lastNode=" + lastNode + ", data0=" + data0 + ", data1=" + data1 + ", data2=" + data2 + ", data3=" + data3 + ", data4=" + data4 + ", data5=" + data5 + ", data6=" + data6 + ", data7=" + data7 + ", data8=" + data8 + ", data9=" + data9 + ", pref0=" + pref0 + ", pref1=" + pref1 + ", pref2=" + pref2 + ", pref3=" + pref3 + ", pref4=" + pref4 + ", pref5=" + pref5 + ", pref6=" + pref6 + ", pref7=" + pref7 + ", pref8=" + pref8 + ", pref9=" + pref9 + ", preference=" + preference + ", loaded=" + loaded + '}';
     }
+
 
 }

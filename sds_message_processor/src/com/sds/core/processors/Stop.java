@@ -16,7 +16,7 @@ public class Stop implements Processor {
     @Override
     public void process(InboxMessage message) {
         log.info("STOP: " + message);
-        String responseText = TextConfigs.STOP_HOW_TO;
+        String responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
 
         //send the message
         MessageUtils.sendMessage(responseText, message);

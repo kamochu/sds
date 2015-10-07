@@ -1,8 +1,8 @@
 package com.sds.core.processors;
 
 import com.google.common.base.Splitter;
-import com.sds.core.OperationTypes;
 import com.sds.core.ScheduledMessage;
+import com.sds.core.conf.OperationTypes;
 import static com.sds.core.processors.Help.pool;
 import com.sds.core.util.MessageUtils;
 import com.sds.core.util.Response;

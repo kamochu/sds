@@ -1,5 +1,7 @@
 package com.sds.core;
 
+import com.sds.core.conf.RequestTypes;
+
 /**
  *
  * @author Samuel Kamochu

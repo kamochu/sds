@@ -53,26 +53,27 @@ public class MessageUtils {
      * @return
      */
     public static Response sendMessage(String message, Message incoming) {
-        return sendMessage(message, incoming.getServiceId(), incoming.getBatchId(), incoming);
+        return sendMessage(message, incoming.getShortCode(), incoming.getServiceId(), incoming.getBatchId(), incoming);
     }
 
     /**
      * send message
      *
      * @param message
+     * @param shortCode
      * @param serviceID
      * @param batchID
      * @param incoming
      * @return
      */
-    public static Response sendMessage(String message, String serviceID, String batchID, Message incoming) {
+    public static Response sendMessage(String message, String shortCode, String serviceID, String batchID, Message incoming) {
         String response;
         log.info("SEND MESSAGE: " + message);
         String url;
         String params = "?"
                 + "service_id=" + serviceID
                 + "&dest_address=" + incoming.getAddress()
-                + "&sender_address=" + incoming.getShortCode()
+                + "&sender_address=" + shortCode
                 + "&correlator=" + incoming.getSenderCorrelator() //
                 + "&batch_id=" + batchID //generate one here
                 + "&message=" + message
@@ -286,13 +287,29 @@ public class MessageUtils {
         }
     }
 
-    public static String getMessage(int nodeId) throws InvalidNodeException {
+    /**
+     * resolves a message to be sent out to subscriber given the node id
+     *
+     * @param nodeId the node id
+     * @param subscriber subscriber instance to be used in replacing some
+     * variables
+     * @return resolved message that can be sent out to subscribers
+     * @throws InvalidNodeException error when a non-existent node id is
+     * specified
+     */
+    public static String resolveMessage(int nodeId, Subscriber subscriber) throws InvalidNodeException {
         //assumption is that nodesmap cannot be empty
         Node node = App.getNodesMap().get(nodeId);
         if (node == null) {
             throw new InvalidNodeException("Node id " + nodeId + " does not exist in the configurations loaded. check configurations.");
         }
+        //varibale replacements to be included later
         return node.getMessage();
+    }
+
+    public static String resolveMessage(String message, Subscriber subscriber) {
+        //varioable replace to included later
+        return message;
     }
 
 }

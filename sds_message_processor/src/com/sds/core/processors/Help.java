@@ -1,17 +1,18 @@
 package com.sds.core.processors;
 
 import com.sds.core.InboxMessage;
-import com.sds.core.OperationTypes;
-import com.sds.core.RegistrationStatus;
+import com.sds.core.conf.OperationTypes;
+import com.sds.core.conf.RegistrationStatus;
 import com.sds.core.Subscriber;
+import com.sds.core.conf.Notifications;
 import com.sds.core.conf.TextConfigs;
+import com.sds.core.exceptions.InvalidNodeException;
 import com.sds.core.util.MessageUtils;
 import com.sds.core.util.Response;
 import com.sds.dao.DBConnectionPool;
 import com.sds.dao.DataManager;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 /**
@@ -48,8 +49,14 @@ public class Help implements Processor {
 
                 log.error("subscriber loaded: " + subscriber);
                 if (subscriber.isLoaded()) {
-                    if (subscriber.getRegStatus() == RegistrationStatus.BASIC) {
-                        responseText = TextConfigs.HELP_REGISTERED_PART1 + subscriber.getName() + TextConfigs.HELP_REGISTERED_PART2;
+                    if (subscriber.getRegStatus() >= RegistrationStatus.BASIC) {
+                        //help for registered subscribers
+                        try {
+                            responseText = MessageUtils.resolveMessage(Notifications.HELP_REGISTERED, subscriber);
+                        } catch (InvalidNodeException ex) {
+                            responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
+                            log.error("error resolving message", ex);
+                        }
                     } else {
                         DBConnectionPool.closeConnection(connection); // not needed anymore
                         //process registration, status not okay
@@ -57,15 +64,30 @@ public class Help implements Processor {
                         return; // do not send any messages
                     }
                 } else {
-                    //customer does not exist on SDS, proceed to registration flow
-                    responseText = TextConfigs.HELP_NON_REGISTERED;
+                    //customer does not exist on the system
+                    try {
+                        responseText = MessageUtils.resolveMessage(Notifications.HELP_NON_REGISTERED, subscriber);
+                    } catch (InvalidNodeException ex) {
+                        responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
+                        log.error("error resolving message", ex);
+                    }
                 }
             } catch (SQLException ex) {
                 log.warn("error loading suscriber: ", ex);
-                responseText = TextConfigs.HELP_GENERAL;
+                try {
+                    responseText = MessageUtils.resolveMessage(Notifications.HELP_GENERAL, subscriber);
+                } catch (InvalidNodeException ex1) {
+                    responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
+                    log.error("error resolving message", ex1);
+                }
             }
         } else {
-            responseText = TextConfigs.HELP_GENERAL;
+            try {
+                responseText = MessageUtils.resolveMessage(Notifications.HELP_GENERAL, subscriber);
+            } catch (InvalidNodeException ex) {
+                responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
+                log.error("error resolving message", ex);
+            }
         }
 
         //send message and updated activity log
