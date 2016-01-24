@@ -23,6 +23,7 @@ public class App {
 
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     public static SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    public final static int MATCH_FREEZE_DAYS = 7;
     private final static Logger log = Logger.getLogger(App.class.getName());
     private final static int NUMBER_OF_CONSUMERS = 4;
     public static boolean isProducerDone = false;
@@ -70,7 +71,7 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        
+
         if (args.length == 2) {
             try {
                 jobInitiator = Integer.parseInt(args[0]);//first argument

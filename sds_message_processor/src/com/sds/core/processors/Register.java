@@ -50,17 +50,14 @@ public class Register implements Processor {
                 String pattern;
                 int newRegStatus;
                 int newLastNode;
-                /*String batchId;
-                 String serviceId;
-                 String shortCode;
-                 */
+
                 log.info("subscriber loaded: " + subscriber);
 
                 //subscriber is loaded
                 if (subscriber.isLoaded()) {
                     if (subscriber.getRegStatus() == RegistrationStatus.COMPLETE) {
                         //tell the customer that registration is complete
-                        responseText = "Registration is complete. To be updated later.";
+                        responseText = "Dear " + subscriber.getName() + ". You are registered for dating service. You can send HELP to 60010 for options.";
                     } else {
                         Node currentNode = App.getNodesMap().get(subscriber.getLastNode());
 
@@ -78,7 +75,7 @@ public class Register implements Processor {
                                     //if current node is a pause node, final node or feild name is not defined, then do not update parameter and do not validate input
                                     if (currentNode.isPauseNode() || currentNode.isFinalNode()
                                             || currentNode.getDbFiledName() == null || "".equals(currentNode.getDbFiledName())) {
-
+                                        
                                         //responseText = MessageUtils.resolveMessage(newLastNode, subscriber);
                                         if (DataManager.updateSubscriberNullParamater(connection,
                                                 newLastNode, newRegStatus, subscriber) == DataManager.EXECUTE_SUCCESS) {

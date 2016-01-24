@@ -246,6 +246,8 @@ public class DataManager {
                         rs.getString("status_reason"),
                         rs.getInt("preference"),
                         rs.getInt("sdp_status"),
+                        rs.getDate("last_shared_on"),
+                        rs.getDate("next_match_date"),
                         true);
 
                 //get data for last node and other generic data parameters
@@ -410,6 +412,8 @@ public class DataManager {
                 sub.setSdpStatus(rs.getInt("sdp_status"));
                 sub.setLoaded(true);
                 sub.setLastNode(rs.getInt("last_node"));
+                sub.setLastSharedDate(rs.getDate("last_shared_on"));
+                sub.setLastSharedDate(rs.getDate("next_match_date"));
                 sub.setData0(rs.getString("data0"));
                 sub.setData1(rs.getString("data1"));
                 sub.setData2(rs.getString("data2"));
@@ -741,6 +745,47 @@ public class DataManager {
             stmt = conn.prepareStatement(query);
             stmt.setString(1, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
             stmt.setLong(2, subscriber.getId());
+
+            //execute the query
+            stmt.execute();
+
+            //close the statement
+            try {
+                stmt.close();
+            } catch (SQLException ex) {
+                log.warn("error closing statement", ex);
+            }
+
+            executionStatus = EXECUTE_SUCCESS;
+
+        } catch (SQLException ex) {
+            log.error("Error executing the " + subscriber + "(" + query + ")", ex);
+        } finally {
+            //close the resourrces opened
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException ex) {
+                log.warn("An error closing a rs and stmt", ex);
+            }
+        }
+        return executionStatus;
+    }
+
+    public static int updateMatchDates(Connection conn, Subscriber subscriber) {
+
+        PreparedStatement stmt = null;
+        String query = null;
+        int executionStatus = EXECUTE_FAIL;// defaulf status is failed
+
+        try {
+            query = "UPDATE tbl_subscribers SET last_shared_on=?, next_match_date=?, last_updated_on = NOW(), last_updated_by=0  WHERE id=?";
+
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+            stmt.setString(2, new SimpleDateFormat("yyyy-MM-dd").format(subscriber.getNextMatchDate()));
+            stmt.setLong(3, subscriber.getId());
 
             //execute the query
             stmt.execute();
@@ -1514,11 +1559,9 @@ public class DataManager {
                     + "FROM "
                     + "tbl_subscribers WHERE "
                     + "status = 1 AND "
-                    + "reg_status=3 AND "
+                    + "reg_status=5 AND "
                     + "id != ? AND "
                     + "sex = ? AND "
-                    + "location = ? AND "
-                    + "preference = ? AND "
                     + "age >= ? AND "
                     + "age <= ? AND "
                     + "last_shared_on < CURRENT_DATE AND "
@@ -1526,14 +1569,14 @@ public class DataManager {
                     + "ORDER BY id ASC "
                     + "LIMIT 0,1;";
 
+            log.info("Query: " + query + "|parameters{" + subId + "," + sex + "," + lowerAge + "," + upperAge + "," + subId + "}");
+
             stmt = conn.prepareStatement(query);
             stmt.setLong(1, subId);
             stmt.setString(2, sex);
-            stmt.setString(3, location);
-            stmt.setInt(4, preference);
-            stmt.setInt(5, lowerAge);
-            stmt.setInt(6, upperAge);
-            stmt.setLong(7, subId);
+            stmt.setInt(3, lowerAge);
+            stmt.setInt(4, upperAge);
+            stmt.setLong(5, subId);
             rs = stmt.executeQuery();
 
             //id,msisdn,name,age,sex,location 

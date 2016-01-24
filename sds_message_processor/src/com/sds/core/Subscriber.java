@@ -1,6 +1,7 @@
 package com.sds.core;
 
 import com.sds.core.conf.RegistrationStatus;
+import java.util.Date;
 
 /**
  *
@@ -22,6 +23,8 @@ public class Subscriber {
     private int sdpStatus;
     private String reason;
     private int lastNode;
+    private Date lastSharedDate;
+    private Date nextMatchDate;
     private String data0;
     private String data1;
     private String data2;
@@ -58,10 +61,10 @@ public class Subscriber {
     }
 
     public Subscriber(String msisdn, String name, int age, String sex, String location) {
-        this(0, msisdn, name, age, sex, location, RegistrationStatus.INITIAL, ACTIVE, "registration", 0, 0, false);
+        this(0, msisdn, name, age, sex, location, RegistrationStatus.INITIAL, ACTIVE, "registration", 0, 0, new Date(), new Date(), false);
     }
 
-    public Subscriber(long id, String msisdn, String name, int age, String sex, String location, int regStatus, int status, String reason, int preference, int sdpStatus, boolean loaded) {
+    public Subscriber(long id, String msisdn, String name, int age, String sex, String location, int regStatus, int status, String reason, int preference, int sdpStatus, Date lastSharedDate, Date nextMatchDate, boolean loaded) {
         this.id = id;
         this.msisdn = msisdn;
         this.name = name;
@@ -75,6 +78,8 @@ public class Subscriber {
         this.loaded = loaded;
         this.sdpStatus = sdpStatus;
         this.lastNode = 0;
+        this.lastSharedDate = lastSharedDate;
+        this.nextMatchDate = nextMatchDate;
     }
 
     public long getId() {
@@ -345,10 +350,25 @@ public class Subscriber {
         this.pref9 = pref9;
     }
 
-    @Override
-    public String toString() {
-        return "Subscriber{" + "id=" + id + ", msisdn=" + msisdn + ", name=" + name + ", age=" + age + ", sex=" + sex + ", location=" + location + ", regStatus=" + regStatus + ", status=" + status + ", sdpStatus=" + sdpStatus + ", reason=" + reason + ", lastNode=" + lastNode + ", data0=" + data0 + ", data1=" + data1 + ", data2=" + data2 + ", data3=" + data3 + ", data4=" + data4 + ", data5=" + data5 + ", data6=" + data6 + ", data7=" + data7 + ", data8=" + data8 + ", data9=" + data9 + ", pref0=" + pref0 + ", pref1=" + pref1 + ", pref2=" + pref2 + ", pref3=" + pref3 + ", pref4=" + pref4 + ", pref5=" + pref5 + ", pref6=" + pref6 + ", pref7=" + pref7 + ", pref8=" + pref8 + ", pref9=" + pref9 + ", preference=" + preference + ", loaded=" + loaded + '}';
+    public Date getLastSharedDate() {
+        return lastSharedDate;
     }
 
+    public void setLastSharedDate(Date lastSharedDate) {
+        this.lastSharedDate = lastSharedDate;
+    }
+
+    public Date getNextMatchDate() {
+        return nextMatchDate;
+    }
+
+    public void setNextMatchDate(Date nextMatchDate) {
+        this.nextMatchDate = nextMatchDate;
+    }
+
+    @Override
+    public String toString() {
+        return "Subscriber{" + "id=" + id + ", msisdn=" + msisdn + ", name=" + name + ", age=" + age + ", sex=" + sex + ", location=" + location + ", regStatus=" + regStatus + ", status=" + status + ", sdpStatus=" + sdpStatus + ", reason=" + reason + ", lastNode=" + lastNode + ", lastSharedDate=" + lastSharedDate + ", nextMatchDate=" + nextMatchDate + ", data0=" + data0 + ", data1=" + data1 + ", data2=" + data2 + ", data3=" + data3 + ", data4=" + data4 + ", data5=" + data5 + ", data6=" + data6 + ", data7=" + data7 + ", data8=" + data8 + ", data9=" + data9 + ", pref0=" + pref0 + ", pref1=" + pref1 + ", pref2=" + pref2 + ", pref3=" + pref3 + ", pref4=" + pref4 + ", pref5=" + pref5 + ", pref6=" + pref6 + ", pref7=" + pref7 + ", pref8=" + pref8 + ", pref9=" + pref9 + ", preference=" + preference + ", loaded=" + loaded + '}';
+    }
 
 }
