@@ -1,4 +1,6 @@
 
+import java.util.regex.Pattern;
+
 /**
  *
  * @author Samuel Kamochu
@@ -7,14 +9,13 @@ public class Test {
 
     public static void main(String[] args) {
 
-        String str = "SUB1213";
-        
-        System.out.println(str.subSequence(0, 3));
+        String pattern = "[mMfF]";
+        System.out.println("Matching " + Pattern.compile(pattern).matcher("f").matches());
 
-    }
-
-    public static void passByReference(String str) {
-        str = "new value";
+//        for (int i = 0; i < 10; i++) {
+//
+//            System.out.println("Matching " + i + " = " + Pattern.compile(pattern).matcher("" + i).matches());
+//        }
     }
 
 }

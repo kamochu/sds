@@ -5,14 +5,15 @@
  */
 package com.sds.core;
 
-import com.sds.core.conf.SubscriptionConfigs;
+import com.sds.core.conf.RequestTypes;
+import com.sds.core.conf.Configs;
 
 /**
  *
  * @author Samuel Kamochu
  */
 public class SubscriptionMessage implements Message {
-    
+
     private long messageId;
     private String msisdn;
     private String subscriberId;
@@ -181,7 +182,7 @@ public class SubscriptionMessage implements Message {
 
     @Override
     public String getShortCode() {
-        return SubscriptionConfigs.REPLY_SHORT_CODE;
+        return Configs.SHORT_CODE;
     }
 
     @Override
@@ -191,7 +192,7 @@ public class SubscriptionMessage implements Message {
 
     @Override
     public String getBatchId() {
-        return SubscriptionConfigs.REPLY_BATCH_ID;
+        return Configs.REPLY_BATCH_ID;
     }
 
     @Override
@@ -213,11 +214,10 @@ public class SubscriptionMessage implements Message {
     public String getPrefix() {
         return RequestTypes.SUBSCRIPTION_PREFIX;
     }
-    
+
     @Override
     public String getMessage() {
         return "N/A";
     }
-
 
 }

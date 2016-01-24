@@ -1,10 +1,12 @@
 package com.sds.core.processors;
 
-import com.sds.core.OperationTypes;
-import com.sds.core.SubcriptionUpdateTypes;
+import com.sds.core.conf.OperationTypes;
+import com.sds.core.conf.SubcriptionUpdateTypes;
 import com.sds.core.Subscriber;
 import com.sds.core.SubscriptionMessage;
+import com.sds.core.conf.Notifications;
 import com.sds.core.conf.TextConfigs;
+import com.sds.core.exceptions.InvalidNodeException;
 import com.sds.core.util.MessageUtils;
 import com.sds.core.util.Response;
 import com.sds.dao.DBConnectionPool;
@@ -20,7 +22,6 @@ import org.apache.log4j.Logger;
 public class Subscription {
 
     private final static Logger log = Logger.getLogger(Subscription.class.getName());
-
     public final static DBConnectionPool pool = DBConnectionPool.getInstance();
 
     public void process(SubscriptionMessage message) {
@@ -51,48 +52,66 @@ public class Subscription {
                     //delete existing profile
                     if (subscriber.isLoaded()) {
                         if (DataManager.deleteSubscriber(connection, subscriber) == DataManager.EXECUTE_SUCCESS) {
-                            String name = "customer";
-                            if (subscriber.getName() != null) {
-                                name = subscriber.getName();
+                            try {
+                                responseText = MessageUtils.resolveMessage(Notifications.STOP_SUCCESS, subscriber);
+                            } catch (InvalidNodeException ex) {
+                                responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
+                                log.error("error loading node id " + Notifications.STOP_SUCCESS, ex);
                             }
-                            responseText = TextConfigs.STOP_REGISTERED_PART1 + name + TextConfigs.STOP_REGISTERED_PART2;
                         } else {
-                            responseText = TextConfigs.STOP_TECHNICAL_ERROR;
+                            responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
                         }
                     } else {
                         //customer does not exist on SDS, proceed to registration flow
-                        responseText = TextConfigs.STOP_NON_REGISTERED;
+                        try {
+                            responseText = MessageUtils.resolveMessage(Notifications.STOP_NON_REGISTERED, subscriber);
+                        } catch (InvalidNodeException ex) {
+                            responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
+                            log.error("error loading node id ", ex);
+                        }
                     }
-                } else if (message.getUpdateType() == SubcriptionUpdateTypes.ADDITION || message.getUpdateType() == SubcriptionUpdateTypes.MODIFICATION) {
-                    //craete a new sub or update existing profile
-                    String name = "customer";
-                    if (subscriber.getName() != null) {
-                        name = subscriber.getName();
-                    }
+                } else if (message.getUpdateType() == SubcriptionUpdateTypes.ADDITION
+                        || message.getUpdateType() == SubcriptionUpdateTypes.MODIFICATION) {
+
                     if (subscriber.isLoaded()) {
-                        if (DataManager.updateSubscriptionParameters(connection, subscriber, message) == DataManager.EXECUTE_SUCCESS) {
-                            responseText = TextConfigs.SUBSCRIPTION_UPDATE_SUCCESS_PART1 + name + TextConfigs.SUBSCRIPTION_UPDATE_SUCCESS_PART2;
-                        } else {
-                            responseText = TextConfigs.SUBSCRIPTION_UPDATE_TECHNICAL_ERROR;
+                        //already registered
+                        try {
+                            responseText = MessageUtils.resolveMessage(Notifications.SUBSCRIPTION_ALREADY_REGISTERED, subscriber);
+                        } catch (InvalidNodeException ex) {
+                            responseText = TextConfigs.SUBSCRIPTION_TECHNICAL_ERROR;
+                            log.error("error resolving last node", ex);
                         }
                     } else {
+                        subscriber.setLastNode(Notifications.SUBSCRIPTION_INITIAL_NODE_ID); // initailize the last node
                         if (DataManager.addSubscriber(connection, subscriber, message) == DataManager.EXECUTE_SUCCESS) {
-                            responseText = TextConfigs.SUBSCRIPTION_ADD_SUCCESS_PART1 + name + TextConfigs.SUBSCRIPTION_ADD_SUCCESS_PART2;
+                            //added the subscriber successfully
+                            try {
+                                responseText = MessageUtils.resolveMessage(subscriber.getLastNode(), subscriber); // get message for last node
+                            } catch (InvalidNodeException ex) {
+                                responseText = TextConfigs.SUBSCRIPTION_TECHNICAL_ERROR;
+                                log.error("unable resolving last node", ex);
+                            }
                         } else {
-                            responseText = TextConfigs.SUBSCRIPTION_ADD_TECHNICAL_ERROR;
+                            //failed to add subscriber
+                            responseText = TextConfigs.SUBSCRIPTION_TECHNICAL_ERROR;
                         }
                     }
                 } else {
-                    //error - unsupportd update type
-                    responseText = TextConfigs.SUBSCRIPTION_UNSUPPORTED_REQUEST;
+                    log.error("subscription request type not supported: " + message.toString() + ", subscriber: " + subscriber);
+                    try {
+                        responseText = MessageUtils.resolveMessage(Notifications.SUBSCRIPTION_UNSUPPORTED_REQUEST, subscriber); // get message for last node
+                    } catch (InvalidNodeException ex) {
+                        responseText = TextConfigs.SUBSCRIPTION_TECHNICAL_ERROR;
+                        log.error("unable resolving last node", ex);
+                    }
                 }
 
             } catch (SQLException ex) {
                 log.warn("error loading suscriber: ", ex);
-                responseText = TextConfigs.STOP_TECHNICAL_ERROR;
+                responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
             }
         } else {
-            responseText = TextConfigs.STOP_TECHNICAL_ERROR;
+            responseText = TextConfigs.GEN_TECHNICAL_FAILURE_TEXT;
         }
 
         Response response = MessageUtils.sendMessage(responseText, message);

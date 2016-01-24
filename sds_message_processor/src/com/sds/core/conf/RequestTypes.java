@@ -1,4 +1,4 @@
-package com.sds.core;
+package com.sds.core.conf;
 
 /**
  *

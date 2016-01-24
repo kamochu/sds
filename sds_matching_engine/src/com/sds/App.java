@@ -1,12 +1,18 @@
 package com.sds;
 
-import com.sds.core.JobStatus;
 import com.sds.core.MatcherConsumer;
 import com.sds.core.MatcherProducer;
+import com.sds.core.Node;
 import com.sds.core.Subscriber;
+import com.sds.core.conf.JobStatus;
+import com.sds.dao.DBConnectionPool;
+import com.sds.dao.DataManager;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import org.apache.log4j.Logger;
 
 /**
@@ -17,6 +23,7 @@ public class App {
 
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     public static SimpleDateFormat mysqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    public final static int MATCH_FREEZE_DAYS = 7;
     private final static Logger log = Logger.getLogger(App.class.getName());
     private final static int NUMBER_OF_CONSUMERS = 4;
     public static boolean isProducerDone = false;
@@ -37,6 +44,29 @@ public class App {
     private static String jobInitiatorComments = "no comments";
     private final static String HELP_STRING = "Expected two command line arguments; initiator_user_id initiators_comments e.g. 1 \"Re-run the job after failures.\"";
 
+    private static Map<Integer, Node> nodesMap = null;
+
+    /**
+     * initialize the application nodes map to be used in other classes. the
+     * service exits if nodes map loading failure occurs
+     *
+     * @throws SQLException
+     */
+    private static void initNodesMap() throws SQLException {
+        Connection con = DBConnectionPool.getInstance().getConnection();
+        nodesMap = DataManager.getNodes(con);
+        log.info("nodes loaded: " + nodesMap);
+    }
+
+    /**
+     * gets the nodes map used at the of initialization
+     *
+     * @return nodes map
+     */
+    public static Map<Integer, Node> getNodesMap() {
+        return nodesMap;
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -48,13 +78,21 @@ public class App {
             } catch (NumberFormatException ex) {
                 log.warn("unable to resolve job initiator cmmand line argument", ex);
             }
-
             jobInitiatorComments = args[1];//second argument 
-
         } else {
             log.error(HELP_STRING);
             System.out.println("Error starting service: " + HELP_STRING);
             System.exit(-1);
+        }
+
+        try {
+            //initialize the node map
+            initNodesMap();
+        } catch (SQLException ex) {
+            System.out.println("Error laoding node map: " + ex);
+            log.error("error loading nodes maps", ex);
+            log.info("service exiting....");
+            System.exit(-1); //errroneous exit
         }
 
         log.info("Service is starting...");

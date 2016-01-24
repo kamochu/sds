@@ -1,5 +1,7 @@
 package com.sds.core;
 
+import com.sds.core.conf.RequestTypes;
+
 /**
  *
  * @author Samuel Kamochu
@@ -117,8 +119,8 @@ public class DeliveryMessage implements Message {
     public String getLinkId() {
         return null;
     }
-    
-     @Override
+
+    @Override
     public int getRequestType() {
         return RequestTypes.DELIVERY_RECEIPT_REQUEST;
     }
