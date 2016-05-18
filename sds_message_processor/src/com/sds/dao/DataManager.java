@@ -1565,6 +1565,7 @@ public class DataManager {
                     + "age >= ? AND "
                     + "age <= ? AND "
                     + "last_shared_on < CURRENT_DATE AND "
+                    + "next_match_date <= CURRENT_DATE AND "
                     + "id NOT IN (SELECT reference_id FROM tbl_scheduler_staging WHERE sub_id=? AND message_type=1) "
                     + "ORDER BY id ASC "
                     + "LIMIT 0,1;";

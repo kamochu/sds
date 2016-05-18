@@ -56,15 +56,13 @@ public class SubscriptionsProducer implements Runnable {
 
     private Connection getConnection() throws SQLException {
 
-        if (conn == null) {
-            try {
-                Class.forName("com.mysql.jdbc.Driver");
-                conn = DriverManager.getConnection("jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME, DB_USER, DB_PASSWORD);
-            } catch (ClassNotFoundException ex) {
-                log.error("Error loading drivers", ex);
-            }
-
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME, DB_USER, DB_PASSWORD);
+        } catch (ClassNotFoundException ex) {
+            log.error("Error loading drivers", ex);
         }
+
         return conn;
 
     }
@@ -81,6 +79,11 @@ public class SubscriptionsProducer implements Runnable {
             try {
                 ArrayList<SubscriptionMessage> list = DataManager.pollSubscriptions(getConnection(), BATCH_SIZE, lastRecordId);
 
+                try {
+                    conn.close();
+                } catch (Exception ex) {
+
+                }
                 //load everything into the queue
                 int size = list.size();
                 log.debug("producing records loaded from the database" + size);

@@ -55,15 +55,13 @@ public class SenderProducer implements Runnable {
 
     private Connection getConnection() throws SQLException {
 
-        if (conn == null) {
-            try {
-                Class.forName("com.mysql.jdbc.Driver");
-                conn = DriverManager.getConnection("jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME, DB_USER, DB_PASSWORD);
-            } catch (ClassNotFoundException ex) {
-                log.error("Error loading drivers", ex);
-            }
-
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME, DB_USER, DB_PASSWORD);
+        } catch (ClassNotFoundException ex) {
+            log.error("Error loading drivers", ex);
         }
+
         return conn;
 
     }
@@ -86,6 +84,12 @@ public class SenderProducer implements Runnable {
                         DAY_FORMAT.format(new Date()),
                         lastRecordId
                 );
+
+                try {
+                    conn.close();
+                } catch (Exception ex) {
+
+                }
 
                 log.debug("loading records - paramters:" + BATCH_SIZE + ", " + HOUR_AND_MINUTE_FORMAT.format(new Date()) + ", "
                         + DAY_FORMAT.format(new Date()) + ", "
